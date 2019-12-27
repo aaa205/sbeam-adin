@@ -73,36 +73,6 @@
                         icon: 'el-icon-lx-cascades',
                         index: 'order-table',
                         title: '订单列表'
-                    },
-                    {
-                        icon: 'el-icon-lx-copy',
-                        index: 'tabs',
-                        title: 'tab选项卡'
-                    },
-                    {
-                        icon: 'el-icon-lx-calendar',
-                        index: '3',
-                        title: '表单相关',
-                        subs: [
-                            {
-                                index: 'form',
-                                title: '基本表单'
-                            },
-                            {
-                                index: 'upload',
-                                title: '文件上传'
-                            }
-                        ]
-                    },
-                    {
-                        icon: 'el-icon-lx-emoji',
-                        index: 'icon',
-                        title: '自定义图标'
-                    },
-                    {
-                        icon: 'el-icon-pie-chart',
-                        index: 'charts',
-                        title: 'schart图表'
                     }
                 ]
             };

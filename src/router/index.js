@@ -20,11 +20,6 @@ export default new Router({
                     meta: { title: '系统首页' }
                 },
                 {
-                    path: '/icon',
-                    component: () => import(/* webpackChunkName: "icon" */ '../components/page/Icon.vue'),
-                    meta: { title: '自定义图标' }
-                },
-                {
                     path: '/product-table',
                     component: () => import(/* webpackChunkName: "table" */ '../components/page/ProductTable.vue'),
                     meta: { title: '商品表格' }
@@ -33,34 +28,6 @@ export default new Router({
                     path: '/order-table',
                     component: () => import(/* webpackChunkName: "table" */ '../components/page/OrderTable.vue'),
                     meta: { title: '订单表格' }
-                },
-                {
-                    path: '/tabs',
-                    component: () => import(/* webpackChunkName: "tabs" */ '../components/page/Tabs.vue'),
-                    meta: { title: 'tab选项卡' }
-                },
-                {
-                    path: '/form',
-                    component: () => import(/* webpackChunkName: "form" */ '../components/page/BaseForm.vue'),
-                    meta: { title: '基本表单' }
-                },
-                {
-                    // 图片上传组件
-                    path: '/upload',
-                    component: () => import(/* webpackChunkName: "upload" */ '../components/page/Upload.vue'),
-                    meta: { title: '文件上传' }
-                },
-                {
-                    // vue-schart组件
-                    path: '/charts',
-                    component: () => import(/* webpackChunkName: "chart" */ '../components/page/BaseCharts.vue'),
-                    meta: { title: 'schart图表' }
-                },
-                {
-                    // 拖拽列表组件
-                    path: '/drag',
-                    component: () => import(/* webpackChunkName: "drag" */ '../components/page/DragList.vue'),
-                    meta: { title: '拖拽列表' }
                 },
                 {
                     path: '/404',

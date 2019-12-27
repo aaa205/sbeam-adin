@@ -3,25 +3,12 @@
         <div class="crumbs">
             <el-breadcrumb separator="/">
                 <el-breadcrumb-item>
-                    <i class="el-icon-lx-cascades"></i> 基础表格
+                    <i class="el-icon-lx-cascades"></i> 订单
                 </el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <div class="container">
             <div class="handle-box">
-                <el-button
-                        type="primary"
-                        icon="el-icon-delete"
-                        class="handle-del mr10"
-                        @click="delAllSelection"
-                >批量删除
-                </el-button>
-                <el-select v-model="query.address" placeholder="地址" class="handle-select mr10">
-                    <el-option key="1" label="广东省" value="广东省"></el-option>
-                    <el-option key="2" label="湖南省" value="湖南省"></el-option>
-                </el-select>
-                <el-input v-model="query.name" placeholder="用户名" class="handle-input mr10"></el-input>
-                <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
             </div>
             <el-table
                     :data="tableData"
@@ -31,97 +18,48 @@
                     header-cell-class-name="table-header"
                     @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="55" align="center"></el-table-column>
-                <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
+                <el-table-column prop="order_id" label="订单ID" width="55" align="center"></el-table-column>
+                <el-table-column prop="product_id" label="商品ID"></el-table-column>
                 <el-table-column prop="name" label="名称"></el-table-column>
-                <el-table-column label="价格">
+                <el-table-column label="单价">
                     <template slot-scope="scope">${{scope.row.price}}</template>
                 </el-table-column>
-                <el-table-column prop="developer" label="开发商">
-                </el-table-column>
-                <el-table-column prop="publisher" label="发行商"></el-table-column>
-                <el-table-column label="描述">
-                    <template slot-scope="scope">{{scope.row.description.substr(0,18)}}</template>
-                </el-table-column>
-                <el-table-column prop="release_date" label="发售日期"></el-table-column>
-                <el-table-column label="操作" width="180" align="center">
-                    <template slot-scope="scope">
-                        <el-button
-                                type="text"
-                                icon="el-icon-edit"
-                                @click="handleEdit(scope.$index, scope.row)"
-                        >编辑
-                        </el-button>
-                        <el-button
-                                type="text"
-                                icon="el-icon-delete"
-                                class="red"
-                                @click="handleDelete(scope.$index, scope.row)"
-                        >删除
-                        </el-button>
-                    </template>
+                <el-table-column prop="quantity" label="数量"></el-table-column>
+                <el-table-column label="总价">
+                    <template slot-scope="scope">{{(scope.row.price*scope.row.quantity).toFixed(2)}}</template>
                 </el-table-column>
             </el-table>
             <div class="pagination">
                 <el-pagination
                         background
                         layout="total, prev, pager, next"
-                        :current-page="query.pageIndex"
-                        :page-size="query.pageSize"
                         :total="pageTotal"
                         @current-change="handlePageChange"
                 ></el-pagination>
             </div>
         </div>
-
-        <!-- 编辑弹出框 -->
-        <el-dialog title="编辑" :visible.sync="editVisible" width="30%">
-            <el-form ref="form" :model="form" label-width="70px">
-                <el-form-item label="名称">
-                    <el-input v-model="form.name"></el-input>
-                </el-form-item>
-                <el-form-item label="价格">
-                    <el-input-number :precision="2" :step="0.1" v-model="form.price"></el-input-number>
-                </el-form-item>
-                <el-form-item label="开发商">
-                    <el-input v-model="form.developer"></el-input>
-                </el-form-item>
-                <el-form-item label="发行商">
-                    <el-input v-model="form.publisher"></el-input>
-                </el-form-item>
-                <el-form-item label="描述">
-                    <el-input v-model="form.description" type="textarea" autosize></el-input>
-                </el-form-item>
-            </el-form>
-            <span slot="footer" class="dialog-footer">
-                <el-button @click="editVisible = false">取 消</el-button>
-                <el-button type="primary" @click="saveEdit">确 定</el-button>
-            </span>
-        </el-dialog>
     </div>
 </template>
 
 <script>
-    import { fetchData } from '../../api/index';
+
+    import { fetchOrderItem } from '../../api';
 
     export default {
         name: 'order-table',
         data() {
             return {
                 query: {
-                    address: '',
-                    name: '',
-                    pageIndex: 1,
-                    pageSize: 10
+                    kw: ''
                 },
                 tableData: [
                     {
                         id: 1,
-                        name: 'aa',
-                        publisher: 'aa',
-                        developer: 'aa',
-                        price: 59.9,
-                        release_date: 114514,
-                        description: 'dddddddddddddddd'
+                        name: "Death Stranding",
+                        price: 59.90,
+                        release_date: 1574941083637,
+                        developer: "Kojima Productions",
+                        publisher: "505 Games"
                     }
                 ],
                 multipleSelection: [],
@@ -134,15 +72,14 @@
             };
         },
         created() {
-            //this.getData();
+            this.getData();
         },
         methods: {
-            // 获取 easy-mock 的模拟数据
+            // 获取 表单数据
             getData() {
-                fetchData(this.query).then(res => {
+                fetchOrderItem().then(res => {
                     console.log(res);
-                    this.tableData = res.list;
-                    this.pageTotal = res.pageTotal || 50;
+                    this.tableData = res.data;
                 });
             },
             // 触发搜索按钮

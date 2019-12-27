@@ -21,7 +21,7 @@
                 <div class="login-btn">
                     <el-button type="primary" @click="submitForm()">登录</el-button>
                 </div>
-                <p class="login-tips">Tips : 用户名和密码随便填。</p>
+                <p class="login-tips">用户名:admin@ad.com 密码:admin</p>
             </el-form>
         </div>
     </div>
@@ -32,8 +32,8 @@ export default {
     data: function() {
         return {
             param: {
-                username: 'admin',
-                password: '123123',
+                username: 'admin@admin.com',
+                password: 'admin',
             },
             rules: {
                 username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],

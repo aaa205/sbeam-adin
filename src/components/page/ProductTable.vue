@@ -3,7 +3,7 @@
         <div class="crumbs">
             <el-breadcrumb separator="/">
                 <el-breadcrumb-item>
-                    <i class="el-icon-lx-cascades"></i> 基础表格
+                    <i class="el-icon-lx-cascades"></i> 商品
                 </el-breadcrumb-item>
             </el-breadcrumb>
         </div>
@@ -16,11 +16,14 @@
                         @click="delAllSelection"
                 >批量删除
                 </el-button>
-                <el-select v-model="query.address" placeholder="地址" class="handle-select mr10">
-                    <el-option key="1" label="广东省" value="广东省"></el-option>
-                    <el-option key="2" label="湖南省" value="湖南省"></el-option>
-                </el-select>
-                <el-input v-model="query.name" placeholder="用户名" class="handle-input mr10"></el-input>
+                <el-button
+                        type="primary"
+                        icon="el-icon-lx-add"
+                        class="handle-del mr10"
+                        @click="handleAdd"
+                >添加
+                </el-button>
+                <el-input v-model="query.kw" placeholder="名称" class="handle-input mr10"></el-input>
                 <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
             </div>
             <el-table
@@ -40,9 +43,11 @@
                 </el-table-column>
                 <el-table-column prop="publisher" label="发行商"></el-table-column>
                 <el-table-column label="描述">
-                    <template slot-scope="scope">{{scope.row.description.substr(0,18)}}</template>
+                    <template slot-scope="scope">{{scope.row.description.substr(0,25)}}</template>
                 </el-table-column>
-                <el-table-column prop="release_date" label="发售日期"></el-table-column>
+                <el-table-column prop="release_date" label="发售日期">
+                    <template slot-scope="scope">{{new Date(scope.row.release_date)}}</template>
+                </el-table-column>
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
                         <el-button
@@ -72,7 +77,6 @@
                 ></el-pagination>
             </div>
         </div>
-
         <!-- 编辑弹出框 -->
         <el-dialog title="编辑" :visible.sync="editVisible" width="30%">
             <el-form ref="form" :model="form" label-width="70px">
@@ -88,6 +92,14 @@
                 <el-form-item label="发行商">
                     <el-input v-model="form.publisher"></el-input>
                 </el-form-item>
+                <el-form-item label="发售日期">
+                    <el-date-picker
+                            v-model="form.release_date"
+                            value-format="timestamp"
+                            type="date"
+                            placeholder="选择日期">
+                    </el-date-picker>
+                </el-form-item>
                 <el-form-item label="描述">
                     <el-input v-model="form.description" type="textarea" autosize></el-input>
                 </el-form-item>
@@ -97,36 +109,58 @@
                 <el-button type="primary" @click="saveEdit">确 定</el-button>
             </span>
         </el-dialog>
+        <!-- 添加弹出框 -->
+        <el-dialog title="添加" :visible.sync="addVisible" width="30%">
+            <el-form ref="form" :model="form" label-width="70px">
+                <el-form-item label="名称">
+                    <el-input v-model="form.name"></el-input>
+                </el-form-item>
+                <el-form-item label="价格">
+                    <el-input-number :precision="2" :step="0.1" v-model="form.price"></el-input-number>
+                </el-form-item>
+                <el-form-item label="开发商">
+                    <el-input v-model="form.developer"></el-input>
+                </el-form-item>
+                <el-form-item label="发行商">
+                    <el-input v-model="form.publisher"></el-input>
+                </el-form-item>
+                <el-form-item label="发售日期">
+                    <el-date-picker
+                            v-model="form.release_date"
+                            value-format="timestamp"
+                            type="date"
+                            placeholder="选择日期">
+                    </el-date-picker>
+                </el-form-item>
+                <el-form-item label="描述">
+                    <el-input v-model="form.description" type="textarea" autosize></el-input>
+                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="addVisible = false">取 消</el-button>
+                <el-button type="primary" @click="saveAdd">确 定</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 
 <script>
-    import { fetchData } from '../../api/index';
+    import { addProduct, deleteProduct, fetchProduct, updateProduct } from '../../api/index';
 
     export default {
         name: 'product-table',
         data() {
             return {
                 query: {
-                    address: '',
-                    name: '',
+                    kw:'',
                     pageIndex: 1,
                     pageSize: 10
                 },
-                tableData: [
-                    {
-                        id: 1,
-                        name: 'aa',
-                        publisher: 'aa',
-                        developer: 'aa',
-                        price: 59.9,
-                        release_date: 114514,
-                        description: 'dddddddddddddddd'
-                    }
-                ],
+                tableData: [],
                 multipleSelection: [],
                 delList: [],
                 editVisible: false,
+                addVisible: false,
                 pageTotal: 0,
                 form: {},
                 idx: -1,
@@ -134,60 +168,112 @@
             };
         },
         created() {
-            //this.getData();
+            this.getData();
         },
         methods: {
-            // 获取 easy-mock 的模拟数据
+            // 获取数据
             getData() {
-                fetchData(this.query).then(res => {
-                    console.log(res);
-                    this.tableData = res.list;
-                    this.pageTotal = res.pageTotal || 50;
+                fetchProduct({kw:this.query.kw}).then(res => {
+                    this.tableData = res.data;
+                    this.pageTotal = 1;
                 });
             },
-            // 触发搜索按钮
-            handleSearch() {
-                this.$set(this.query, 'pageIndex', 1);
-                this.getData();
+            // 搜索操作
+            handleSearch(){
+                this.getData({kw:this.query.kw})
             },
             // 删除操作
             handleDelete(index, row) {
                 // 二次确认删除
                 this.$confirm('确定要删除吗？', '提示', {
                     type: 'warning'
-                })
-                    .then(() => {
-                        this.$message.success('删除成功');
-                        this.tableData.splice(index, 1);
-                    })
-                    .catch(() => {
+                }).then(() => {
+                    deleteProduct([row.id]).then(resp => {
+                        if (resp.status == 200) {
+                            this.$message.success('删除成功');
+                            this.tableData.splice(index, 1);
+                        } else {
+                            this.$message.error('删除失败');
+                        }
                     });
+                }).catch(() => {
+                });
             },
             // 多选操作
             handleSelectionChange(val) {
                 this.multipleSelection = val;
             },
             delAllSelection() {
-                const length = this.multipleSelection.length;
-                let str = '';
-                this.delList = this.delList.concat(this.multipleSelection);
-                for (let i = 0; i < length; i++) {
-                    str += this.multipleSelection[i].name + ' ';
-                }
-                this.$message.error(`删除了${str}`);
-                this.multipleSelection = [];
+                //上传删除的id
+                let delIds = this.multipleSelection.map(i => {
+                    return i.id;
+                });
+                deleteProduct(delIds).then(resp => {
+                    if (resp.status == 200) {
+                        const length = this.multipleSelection.length;
+                        let str = '';
+                        this.delList = this.delList.concat(this.multipleSelection);
+                        for (let i = 0; i < length; i++) {
+                            str += this.multipleSelection[i].name + ' ';
+                        }
+                        this.$message.success(`删除了${str}`);
+                        //被选中元素的下标
+                        let delIndex=[]
+                        this.tableData.forEach((data,index)=>{
+                            if(typeof(this.delList.find(del=>{return del.id==data.id}))!='undefined'){
+                                delIndex.push(index)
+                            }
+                        })
+                        console.log(delIndex);
+                        delIndex.forEach(i=>{this.tableData.splice(i,1)})
+                        this.multipleSelection = [];
+                    } else {
+                        this.$message.error(`删除失败`);
+                    }
+                });
+
             },
             // 编辑操作
             handleEdit(index, row) {
                 this.idx = index;
-                this.form = row;
+                this.form = JSON.parse(JSON.stringify(row));
                 this.editVisible = true;
             },
             // 保存编辑
             saveEdit() {
-                this.editVisible = false;
-                this.$message.success(`修改第 ${this.idx + 1} 行成功`);
-                this.$set(this.tableData, this.idx, this.form);
+                updateProduct(this.form).then(resp => {
+                    if (resp.status == 200) {
+                        this.editVisible = false;
+                        this.$message.success(`修改第 ${this.idx + 1} 行成功`);
+                        this.$set(this.tableData, this.idx, this.form);
+                    } else {
+                        this.$message.error('修改失败');
+                    }
+                });
+            },
+            //添加操作
+            handleAdd() {
+                this.form = {
+                    name: null,
+                    price: null,
+                    release_date: null,
+                    developer: null,
+                    publisher: null,
+                    description: null
+                };
+                this.addVisible = true;
+            },
+            //保存添加
+            saveAdd() {
+                addProduct(this.form).then(resp => {
+                    if (resp.status == 200) {
+                        this.addVisible = false;
+                        this.$message.success('添加成功');
+                        this.tableData.push(resp.data)
+                    }else{
+                        this.$message.error('添加失败');
+                    }
+                });
             },
             // 分页导航
             handlePageChange(val) {
